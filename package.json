@@ -1,0 +1,34 @@
+{
+  "name": "vue-html-dialog",
+  "version": "1.0.2",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/vue-html-dialog.js",
+      "require": "./dist/vue-html-dialog.umd.cjs"
+    },
+    "./vue-html-dialog.css": "./dist/vue-html-dialog.css"
+  },
+  "style": "dist/vue-html-dialog.css",
+  "files": [
+    "dist"
+  ],
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && vue-tsc --emitDeclarationOnly",
+    "types": "vue-tsc ",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.13",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "@vue/tsconfig": "^0.7.0",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5",
+    "vue-tsc": "^2.2.8"
+  }
+}
