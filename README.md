@@ -32,11 +32,6 @@ To use the dialog component, you need to import it into your Vue component:
 import { HtmlDialog } from 'vue-html-dialog';
 import 'vue-html-dialog/vue-html-dialog.css';
 ```
-Optionally, you can import the CSS file by name:
-
-```javascript
-import { HtmlDialog, dialogCss } from 'vue-html-dialog';
-```
 
 ### Registering the Component
 You can register the component globally or locally. For global registration, you can do it in your main.js file:
@@ -45,12 +40,6 @@ You can register the component globally or locally. For global registration, you
 import App from './App.vue';
 import { HtmlDialog } from 'vue-html-dialog';
 import 'vue-html-dialog/vue-html-dialog.css';
-```
-Optionally, you can import the CSS file by name:
-
-```javascript
-import App from './App.vue';
-import { HtmlDialog, dialogCss } from 'vue-html-dialog';
 ```
 
 ```javascript
