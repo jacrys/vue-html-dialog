@@ -1,7 +1,29 @@
 {
   "name": "vue-html-dialog",
   "version": "1.0.2",
+  "description": "A native HTML Dialog written in Vue.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jacrys/vue-html-dialog.git"
+  },
+  "keywords": [
+    "vue",
+    "dialog",
+    "popup",
+    "modal",
+    "html",
+    "vue3",
+    "vue3-dialog",
+    "vue3-popup",
+    "vue3-modal",
+    "vue3-html"
+  ],
+  "author": "Jacrys Talach",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jacrys/vue-html-dialog/issues"
+  },
   "exports": {
     ".": {
       "import": "./dist/vue-html-dialog.js",
