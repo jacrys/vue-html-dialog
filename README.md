@@ -75,8 +75,41 @@ function onClose() {
 }
 </script>
 ```
+<hr style="border:2px solid gray">
 
-### Props for HtmlDialog.vue
+## HtmlDialog
+
+### Props
+
+| Prop                  | Type      | Default      | Description |
+|-----------------------|-----------|--------------|-------------|
+| `modelValue`          | `boolean` | `false`      | Controls dialog visibility |
+| `showBackdrop`        | `boolean` | `true`       | Shows a backdrop |
+| `closeOnBackdropClick`| `boolean` | `true`       | Closes on backdrop click |
+| `closeOnOutsideClick` | `boolean` | `true`       | Closes on outside click (when no backdrop) |
+| `closeOnEscape`       | `boolean` | `true`       | Closes on Escape key |
+| `showCloseButton`     | `boolean` | `true`       | Shows close `×` button |
+| `enterActiveClass`    | `string`  | `'fade-enter-active'` | Transition class on enter |
+| `leaveActiveClass`    | `string`  | `'fade-leave-active'` | Transition class on leave |
+| `transitionDuration`  | `number`  | `300`        | Transition time in ms |
+
+### Slots
+
+- Default slot: Content inside the dialog.
+
+### Events
+
+| Event     | Description |
+|-----------|-------------|
+| `open`     | Fires when dialog opens |
+| `close`    | Fires when dialog closes |
+
+<hr style="border:2px solid gray">
+
+## FullNativeDialog
+This component is a lightweight wrapper around the native `<dialog>` element, providing a simple way to create dialogs with transitions.
+
+### Props for
 
 | Prop                  | Type      | Default      | Description |
 |-----------------------|-----------|--------------|-------------|
@@ -102,6 +135,7 @@ function onClose() {
 | `open`     | Fires when dialog opens |
 | `close`    | Fires when dialog closes |
 
+<hr style="border:2px solid gray">
 
 ## Notice
 If you used a previous version of this library, please note that the component API has changed:

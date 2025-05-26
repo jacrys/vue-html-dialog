@@ -1,13 +1,14 @@
 <script lang="ts" setup>
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import {
+  ref,
+  watch,
+  onBeforeUnmount,
+  defineExpose,
+} from 'vue'
 
-// Define the props for the dialog component
-// This includes options for backdrop, close behavior, and animation classes
 const props = defineProps({
-  modelValue: Boolean,
   showBackdrop: { type: Boolean, default: true },
   closeOnBackdropClick: { type: Boolean, default: true },
-  closeOnOutsideClick: { type: Boolean, default: true },
   closeOnEscape: { type: Boolean, default: true },
   showCloseButton: { type: Boolean, default: true },
   titleId: String,
@@ -19,149 +20,59 @@ const props = defineProps({
   transitionDuration: { type: Number, default: 300 },
 } as const);
 
-// Define refs for the dialog element and visibility state
-const dialogEl = ref<HTMLDialogElement | null>(null);
-
-const isVisible = ref(props.modelValue);
-
-const supportsDialog = typeof HTMLDialogElement !== 'undefined';
+const dialogEl = ref<HTMLDialogElement | null>(null)
+const isVisible = ref<boolean>(false)
 
 // Define the emits for the component
-const emit = defineEmits(['update:modelValue', 'open', 'close']);
+const emit = defineEmits(['open', 'close']);
 
-// Set a watcher to update isVisible when modelValue changes
-watch(() => props.modelValue, (val) => {
-  isVisible.value = val;
-})
-
-// Set a watcher to emit events when isVisible changes
-watch(isVisible, (visible) => {
-  if (visible) {
-    nextTick(() => {
-      nextTick(() => {
-        if (dialogEl.value && !dialogEl.value.open) {
-          dialogEl.value.showModal();
-          dialogEl.value.focus();
-        }
-      });
-    });
-  } else {
-    dialogEl.value?.close();
-  }
-});
-
-// Set a watcher to manage the Event listeners for keydown and outside clicks
-watch(isVisible, (val) => {
-  if (val) {
-    window.addEventListener('keydown', handleKeydown);
-
-    // Only listen for outside clicks if there's no backdrop
-    if (!props.showBackdrop && props.closeOnOutsideClick) {
-      document.addEventListener('mousedown', handleOutsideClick);
-    }
-  }
-  else {
-    window.removeEventListener('keydown', handleKeydown);
-    document.removeEventListener('mousedown', handleOutsideClick);
-  }
-})
-
-watch(() => props.modelValue, (val) => {
-  if (val) openDialog();
-  else closeDialog();
-});
-
-// Handle external Open and Close methods
 function openDialog(): void {
-  if (supportsDialog && dialogEl.value && dialogEl.value.showModal) {
-    isVisible.value = true;
-    nextTick(() => {
-      nextTick(() => {
-        if (dialogEl.value && dialogEl.value.showModal) {
-          dialogEl.value.showModal();
-          emit('open');
-        }
-        else {
-          console.warn('HTMLDialogElement is not supported in this browser.');
-          emit('open');
-        }
-      });
-    });
-  } else {
-    isVisible.value = true;
-    emit('open');
-  }
+  isVisible.value = true;
 }
 
 function closeDialog(): void {
-  dialogEl.value?.close();
-  emit('update:modelValue', false); // Optional
-  emit('close');
+  isVisible.value = false;
 }
 
-// Define methods to handle dialog close events
 function handleBackdropClick(event: MouseEvent): void {
   if (event.target === event.currentTarget && props.closeOnBackdropClick) {
-    closeDialog();
-  }
-}
-
-function handleNativeClose() {
-  isVisible.value = false;
-  emit('update:modelValue', false);
-  emit('close');
-}
-
-function handleOutsideClick(event: MouseEvent): void {
-  if (!dialogEl.value || !props.closeOnOutsideClick) return
-
-  const dialog = dialogEl.value;
-  const target = event.target as Node;
-
-  // If the clicked element is not part of the dialog, close it
-  if (!dialog.contains(target)) {
-    closeDialog();
+    closeDialog()
   }
 }
 
 function handleKeydown(event: KeyboardEvent): void {
   if (event.key === 'Escape' && props.closeOnEscape) {
-    closeDialog();
+    closeDialog()
   }
 }
 
-// Sync isVisible on component mount
-onMounted(() => {
-  if (dialogEl.value) {
-    isVisible.value = props.modelValue;
-    dialogEl.value.addEventListener('close', handleNativeClose);
+watch(isVisible, (visible) => {
+  if (visible) {
+    window.addEventListener('keydown', handleKeydown)
+  } else {
+    window.removeEventListener('keydown', handleKeydown)
   }
 })
 
-// Cleanup listeners on component unmount
 onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown);
-  document.removeEventListener('mousedown', handleOutsideClick);
-  dialogEl.value?.removeEventListener('close', handleNativeClose);
-  isVisible.value = false;
+  window.removeEventListener('keydown', handleKeydown)
 })
 
-// Expose methods to parent components
 defineExpose<{
   openDialog: () => void
   closeDialog: () => void
 }>({
   openDialog,
   closeDialog,
-});
+})
 </script>
 
 <template>
-  <transition :enter-active-class="enterActiveClass" :leave-active-class="leaveActiveClass" @after-leave="$emit('close')">
-    <div v-show="isVisible && showBackdrop" :class="['backdrop',backdropClass]" @mousedown="handleBackdropClick" role="presentation" :style="{ '--transition-duration': transitionDuration + 'ms' }">
-      <dialog ref="dialogEl" :class="['dialog', dialogClass]" @pointerdown.stop role="dialog" aria-modal="true" :aria-describedby="titleId">
+  <transition :enter-active-class="enterActiveClass" @after-enter="$emit('open')" :leave-active-class="leaveActiveClass" @after-leave="$emit('close')">
+    <div v-show="isVisible && showBackdrop" :class="['backdrop',backdropClass]" @pointerup="handleBackdropClick" role="presentation" :style="{ '--transition-duration': transitionDuration + 'ms' }">
+      <dialog ref="dialogEl" open :class="['dialog', dialogClass]" role="dialog" @click.stop @touchend.stop aria-modal="true" :aria-describedby="titleId">
         <div role="document">
-          <button v-if="showCloseButton" :class="['close-button', closeButtonClass]" @pointerdown.prevent="closeDialog" aria-label="Close the modal">×</button>
+          <button v-if="showCloseButton" :class="['close-button', closeButtonClass]" @pointerup="closeDialog" aria-label="Close the modal">×</button>
           <slot />
         </div>
       </dialog>
