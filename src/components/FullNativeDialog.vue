@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch, onMounted, onBeforeUnmount, defineProps, defineEmits } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 
 // Define the props for the dialog component
 // This includes options for close behavior, and animation classes

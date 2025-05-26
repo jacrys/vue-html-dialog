@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch, defineProps, defineEmits, defineExpose, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 
 // Define the props for the dialog component
 // This includes options for backdrop, close behavior, and animation classes
@@ -35,15 +35,20 @@ watch(() => props.modelValue, (val) => {
 })
 
 // Set a watcher to emit events when isVisible changes
-watch(isVisible, (val) => {
-  emit('update:modelValue', val);
-  if (val) {
-    emit('open');
+watch(isVisible, (visible) => {
+  if (visible) {
     nextTick(() => {
-      dialogEl.value?.focus();
+      nextTick(() => {
+        if (dialogEl.value && !dialogEl.value.open) {
+          dialogEl.value.showModal();
+          dialogEl.value.focus();
+        }
+      });
     });
+  } else {
+    dialogEl.value?.close();
   }
-})
+});
 
 // Set a watcher to manage the Event listeners for keydown and outside clicks
 watch(isVisible, (val) => {
@@ -61,18 +66,37 @@ watch(isVisible, (val) => {
   }
 })
 
+watch(() => props.modelValue, (val) => {
+  if (val) openDialog();
+  else closeDialog();
+});
 
 // Handle external Open and Close methods
 function openDialog(): void {
-  if (supportsDialog && dialogEl.value?.showModal) {
-    dialogEl.value.showModal();
+  if (supportsDialog && dialogEl.value && dialogEl.value.showModal) {
+    isVisible.value = true;
+    nextTick(() => {
+      nextTick(() => {
+        if (dialogEl.value && dialogEl.value.showModal) {
+          dialogEl.value.showModal();
+          emit('open');
+        }
+        else {
+          console.warn('HTMLDialogElement is not supported in this browser.');
+          emit('open');
+        }
+      });
+    });
   } else {
     isVisible.value = true;
+    emit('open');
   }
 }
 
 function closeDialog(): void {
-  isVisible.value = false;
+  dialogEl.value?.close();
+  emit('update:modelValue', false); // Optional
+  emit('close');
 }
 
 // Define methods to handle dialog close events
@@ -109,7 +133,7 @@ function handleKeydown(event: KeyboardEvent): void {
 // Sync isVisible on component mount
 onMounted(() => {
   if (dialogEl.value) {
-    isVisible.value = dialogEl.value.open
+    isVisible.value = props.modelValue;
     dialogEl.value.addEventListener('close', handleNativeClose);
   }
 })
@@ -119,6 +143,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown);
   document.removeEventListener('mousedown', handleOutsideClick);
   dialogEl.value?.removeEventListener('close', handleNativeClose);
+  isVisible.value = false;
 })
 
 // Expose methods to parent components
@@ -134,7 +159,7 @@ defineExpose<{
 <template>
   <transition :enter-active-class="enterActiveClass" :leave-active-class="leaveActiveClass" @after-leave="$emit('close')">
     <div v-show="isVisible && showBackdrop" :class="['backdrop',backdropClass]" @mousedown="handleBackdropClick" role="presentation" :style="{ '--transition-duration': transitionDuration + 'ms' }">
-      <dialog ref="dialogEl" :open="isVisible" :class="['dialog', dialogClass]" @pointerdown.stop role="dialog" aria-modal="true" :aria-describedby="titleId">
+      <dialog ref="dialogEl" :class="['dialog', dialogClass]" @pointerdown.stop role="dialog" aria-modal="true" :aria-describedby="titleId">
         <div role="document">
           <button v-if="showCloseButton" :class="['close-button', closeButtonClass]" @pointerdown.prevent="closeDialog" aria-label="Close the modal">×</button>
           <slot />
@@ -174,6 +199,14 @@ defineExpose<{
   transition: transform var(--transition-duration) ease,
     opacity var(--transition-duration) ease;
   opacity: 1;
+}
+
+.dialog div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 /* Close button */
